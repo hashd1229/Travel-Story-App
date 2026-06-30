@@ -3,7 +3,7 @@ import { MdAdd, MdDeleteOutline, MdUpdate, MdClose } from 'react-icons/md';
 import DateSelector from '../../components/input/DateSelector';
 import ImageSelector from '../../components/input/ImageSelector';
 import TagInput from '../../components/input/TagInput';
-import axiosInstance from '../../utils/axiosInstance';
+import axiosInstance from '../../utils/axiosinstance';
 import { toast } from 'react-toastify';
 import moment from 'moment';
 import uploadImage from '../../utils/uploadImage';

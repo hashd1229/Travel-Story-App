@@ -1,6 +1,5 @@
 require('dotenv').config();
 
-const config = require('./config.json');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const express = require('express');
@@ -15,11 +14,53 @@ const { authenticateToken } = require('./utilities');
 const User = require('./models/user.model');
 const TravelStory = require('./models/travelStory.model');
 
-mongoose.connect(config.ConnectionString);
+let localConfig = {};
+try {
+    localConfig = require('./config.json');
+} catch (error) {
+    localConfig = {};
+}
+
+const PORT = process.env.PORT || 8000;
+const SERVER_URL = process.env.SERVER_URL || `http://localhost:${PORT}`;
+const mongoUri = process.env.MONGODB_URI || localConfig.ConnectionString;
+
+if (!mongoUri) {
+    throw new Error('Missing MongoDB connection string. Set MONGODB_URI in environment variables.');
+}
+
+mongoose.connect(mongoUri)
+    .then(() => console.log('MongoDB connected'))
+    .catch((error) => {
+        console.error('MongoDB connection failed:', error.message);
+        process.exit(1);
+    });
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: "*" }));
+
+const allowedOrigins = (process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error('CORS not allowed for this origin'));
+    },
+}));
+
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+});
 
 // Create account
 app.post("/create-account", async (req, res) => {
@@ -138,7 +179,7 @@ app.post("/image-upload", upload.single('image'), async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: true, message: "No Image uploaded" });
         }
-        const imageUrl = `http://localhost:8000/uploads/${req.file.filename}`;
+        const imageUrl = `${SERVER_URL}/uploads/${req.file.filename}`;
         res.status(200).json({ imageUrl });
     } catch (error) {
         res.status(500).json({ error: true, message: error.message });
@@ -232,7 +273,7 @@ app.put("/edit-story/:id", authenticateToken, async (req, res) => {
         if (!travelStory) {
             return res.status(404).json({ error: true, message: "Travel story not found" });
         }
-        const placeholderImageUrl = "http://localhost:8000/assets/placeholder-image.png";
+        const placeholderImageUrl = `${SERVER_URL}/assets/placeholder-image.png`;
 
         travelStory.title = title;
         travelStory.story = story;
@@ -354,5 +395,7 @@ app.get("/travel-stories/filter", authenticateToken, async (req, res) => {
     }
 });
 
-app.listen(8000);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
 module.exports = app;

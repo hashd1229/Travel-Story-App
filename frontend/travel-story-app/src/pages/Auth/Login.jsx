@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import loginBgImage from '../../assets/images/bg-image.jpg'
 import PasswordInput from '../../components/input/PasswordInput';
 import { validateEmail } from '../../utils/helper';
-import axiosInstance from '../../utils/axiosInstance';
+import axiosInstance from '../../utils/axiosinstance';
 
 const Login = () => {
 

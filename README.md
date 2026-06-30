@@ -73,7 +73,11 @@ The backend runs on `http://localhost:8000`.
 Required backend configuration:
 
 - `ACCESS_TOKEN_SECRET` in your environment
-- MongoDB connection string in `backend/config.json`
+- `MONGODB_URI` in your environment (preferred)
+- `FRONTEND_URL` (comma-separated allowed origins for CORS)
+- `SERVER_URL` (public backend URL used to build uploaded image URLs)
+
+Example: copy `backend/.env.example` to `backend/.env` and fill values.
 
 ### Frontend
 
@@ -91,6 +95,39 @@ npm run dev
 ```
 
 The frontend runs on Vite's local dev server and talks to `http://localhost:8000` through Axios.
+
+Example: copy `frontend/travel-story-app/.env.example` to `frontend/travel-story-app/.env`.
+
+## Deployment
+
+### Backend on Render
+
+1. Create a new **Web Service** from this repository.
+2. Set **Root Directory** to `backend`.
+3. Build command: `npm install`
+4. Start command: `npm start`
+5. Add environment variables:
+  - `MONGODB_URI`
+  - `ACCESS_TOKEN_SECRET`
+  - `FRONTEND_URL` = your Netlify site URL (for example `https://your-site.netlify.app`)
+  - `SERVER_URL` = your Render backend URL (for example `https://travel-story-api.onrender.com`)
+
+Optional: keep `PORT` empty on Render (Render injects it automatically).
+
+### Frontend on Netlify
+
+This repo includes `netlify.toml` configured for the Vite app in `frontend/travel-story-app`.
+
+1. Create a new Netlify site from this repository.
+2. Add environment variable:
+  - `VITE_API_URL` = your Render backend URL (for example `https://travel-story-api.onrender.com`)
+3. Deploy.
+
+Client-side routing fallback is configured through `frontend/travel-story-app/public/_redirects`.
+
+## Important Note About Images
+
+Uploaded files are currently stored in `backend/uploads`. On Render, local disk is ephemeral, so files can be lost after redeploy/restart. For production, use object storage (Cloudinary, S3, etc.) for persistent images.
 
 ## API Summary
 

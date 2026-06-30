@@ -1,7 +1,7 @@
 import React from 'react'
 import Navbar from '../../components/Navbar'
 import { useNavigate } from 'react-router-dom'
-import axiosInstance from '../../utils/axiosInstance';
+import axiosInstance from '../../utils/axiosinstance';
 import { MdAdd } from 'react-icons/md';
 import Modal from "react-modal";
 import TravelStoryCard from '../../components/Cards/TravelStoryCard';
